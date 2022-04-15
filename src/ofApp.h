@@ -7,7 +7,7 @@
 #include <CoreGraphics/CoreGraphics.h>
 
 #define MAX_DISPLAYS 2
-#define INTERVAL 10
+#define INTERVAL 3
 #define RESIZE 0.5
 
 class ofApp : public ofBaseApp{
@@ -37,8 +37,6 @@ class ofApp : public ofBaseApp{
     CGDisplayCount maxDisplays = MAX_DISPLAYS;
     CGDirectDisplayID onlineDisplays[MAX_DISPLAYS];
 
-
-
     //メインディスプレイの幅と高さ
     size_t width[MAX_DISPLAYS];
     size_t height[MAX_DISPLAYS];
@@ -60,5 +58,5 @@ class ofApp : public ofBaseApp{
     CGImageRef imageRef[MAX_DISPLAYS];
 
     //時刻取得用
-    unsigned int interval, oldtime;
+    unsigned int oldtime;
 };
