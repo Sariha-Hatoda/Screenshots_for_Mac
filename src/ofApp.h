@@ -7,6 +7,8 @@
 #include <CoreGraphics/CoreGraphics.h>
 
 #define MAX_DISPLAYS 2
+#define INTERVAL 10
+#define RESIZE 0.5
 
 class ofApp : public ofBaseApp{
 

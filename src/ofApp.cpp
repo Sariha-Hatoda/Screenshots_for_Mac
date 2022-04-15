@@ -42,11 +42,10 @@ void ofApp::setup(){
         contextRef[i] = CGBitmapContextCreate(imgs[i].data, imgs[i].cols, imgs[i].rows, 8, imgs[i].step[0], colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
 
     }
-    ofSetWindowShape(drawwidth*0.5, drawheight*0.5);
+    ofSetWindowShape(drawwidth*RESIZE, drawheight*RESIZE);
 
     //画像配列の定義(BGRA，BGR，リサイズBGR)
     
-    interval = 60;
     oldtime = ofGetElapsedTimef();
 }
 
@@ -70,15 +69,15 @@ void ofApp::update(){
 void ofApp::draw(){
     //リサイズ後のスクショを描画
     for (int i = 0; i < displayCount; i++) {
-    ofxCv::drawMat(imgs[i], 0+i*width[i-1]*0.5, 0, width[i]*0.5, height[i]*0.5);
+    ofxCv::drawMat(imgs[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
     }
     //画面収録用
     ofImage savefig;
     savefig.grabScreen(0, 0,drawwidth, drawheight);
 
 
-    if (int(ofGetElapsedTimef())-oldtime == interval) {
-        savefig.resize(savefig.getWidth()*0.5, savefig.getHeight()*0.5);
+    if (int(ofGetElapsedTimef())-oldtime == INTERVAL) {
+        savefig.resize(savefig.getWidth()*RESIZE, savefig.getHeight()*RESIZE);
         savefig.save(ofGetTimestampString("%y%m%d%H%M%S") + ".jpg");
         oldtime = ofGetElapsedTimef();
     }
