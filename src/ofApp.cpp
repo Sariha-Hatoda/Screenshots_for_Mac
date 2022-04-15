@@ -27,10 +27,6 @@ void ofApp::setup(){
 
         dID = onlineDisplays[i];
 
-        printf("ID:%-16u\tResolution:%lux%lu\n", dID,
-               CGDisplayPixelsWide(dID), CGDisplayPixelsHigh(dID));
-
-
         width[i] =CGDisplayPixelsWide(dID);
         height[i] =CGDisplayPixelsHigh(dID);
         drawwidth+=width[i];
