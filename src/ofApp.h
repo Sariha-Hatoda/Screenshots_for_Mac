@@ -63,7 +63,25 @@ class ofApp : public ofBaseApp{
 
     //輝度差分を格納しておく変数
     float diff;
-    //cv::Matを0次元まで圧縮する関数(プロトコルはAVERAGE)
+
+    cv::Mat graydiff(cv::Mat now, cv::Mat old){
+        //グレースケール化
+        cv::Mat nowg,oldg,diffg;
+        cv::cvtColor(now, nowg, CV_RGBA2GRAY);
+        cv::cvtColor(old, oldg, CV_RGBA2GRAY);
+        cv::absdiff(nowg,oldg,diffg);
+        return diffg;
+    }
+    int reduceMat(cv::Mat inputMat){
+        int scalaint;
+/*        cv::Mat reduce1, reduce0;
+        cv::reduce(inputMat, reduce1, 1, CV_REDUCE_AVG);
+        cv::reduce(reduce1, reduce0, 0, CV_REDUCE_AVG);
+*/
+        scalaint = (int)cv::mean(inputMat)[0];
+        return scalaint;
+    }
+        //cv::Matを0次元まで圧縮する関数(プロトコルはAVERAGE)
     void Matdiff(cv::Mat now, cv::Mat old){
         //スカラ形式で0次元のMatの値を格納
         int scalaint=0;

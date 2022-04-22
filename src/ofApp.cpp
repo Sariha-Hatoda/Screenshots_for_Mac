@@ -75,15 +75,17 @@ void ofApp::draw(){
         for (int i = 0; i < displayCount; i++) {
             //cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
             //diff+=Mat_average(imgsdiff[i]);
-            Matdiff(imgs[i], imgsold[i]);
+            //Matdiff(imgs[i], imgsold[i]);
+            imgsdiff[i] = graydiff(imgs[i], imgsold[i]);
+            cout <<ofToString(i)+":"<< reduceMat(imgsdiff[i]) << endl;
             imgsold[i] = imgs[i].clone();
         }
     }
     //cout<< diff << endl;
     //リサイズ後のスクショを描画
     for (int i = 0; i < displayCount; i++) {
-        ofxCv::drawMat(imgs[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
-        //ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
+        //ofxCv::drawMat(imgs[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
+        ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
     }
 /*
     //画面収録用
