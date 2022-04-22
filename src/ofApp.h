@@ -62,8 +62,9 @@ class ofApp : public ofBaseApp{
     bool isFirst;
 
     //輝度差分を格納しておく変数
-    float diff;
+    float diff[MAX_DISPLAYS];
 
+    //グレースケール化したのち差分画像を生成する関数
     cv::Mat graydiff(cv::Mat now, cv::Mat old){
         //グレースケール化
         cv::Mat nowg,oldg,diffg;
@@ -72,33 +73,10 @@ class ofApp : public ofBaseApp{
         cv::absdiff(nowg,oldg,diffg);
         return diffg;
     }
-    int reduceMat(cv::Mat inputMat){
-        int scalaint;
-/*        cv::Mat reduce1, reduce0;
-        cv::reduce(inputMat, reduce1, 1, CV_REDUCE_AVG);
-        cv::reduce(reduce1, reduce0, 0, CV_REDUCE_AVG);
-*/
-        scalaint = (int)cv::mean(inputMat)[0];
-        return scalaint;
-    }
-        //cv::Matを0次元まで圧縮する関数(プロトコルはAVERAGE)
-    void Matdiff(cv::Mat now, cv::Mat old){
-        //スカラ形式で0次元のMatの値を格納
-        int scalaint=0;
-        //グレースケール化
-        cv::Mat nowg,oldg,diffg;
-        cv::cvtColor(now, nowg, CV_RGBA2GRAY);
-        cv::cvtColor(old, oldg, CV_RGBA2GRAY);
-
-        cv::absdiff(nowg,oldg,diffg);
-
-        cv::Mat reduce1, reduce0;
-
-        cv::reduce(diffg, reduce1, 1, CV_REDUCE_AVG);
-        cv::reduce(reduce1, reduce0, 0, CV_REDUCE_AVG);
-        //cout << reduce0.at<int>(0) << endl;
-        scalaint = reduce0.at<int>(0);
-        cout << scalaint << endl;
-        //return scalaint;
+    //cv::Mat各要素の平均をとる関数
+    float reduceMat(cv::Mat inputMat){
+        float scalafloat;
+        scalafloat = (float)cv::mean(inputMat)[0];
+        return scalafloat;
     }
 };

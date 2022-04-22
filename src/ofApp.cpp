@@ -5,6 +5,7 @@
 
 目標:
 輝度差分をとる．
+とれた．
 
 */
 
@@ -38,7 +39,8 @@ void ofApp::setup(){
         cv::Mat im(cv::Size(width[i], height[i]), CV_8UC4);
         //配列要素を同様に定義
         imgs[i] = im;
-
+        //imgsoldはimgsで初期化
+        imgsold[i] = imgs[i].clone();
         //CGコンテクストを作成
         contextRef[i] = CGBitmapContextCreate(imgs[i].data, imgs[i].cols, imgs[i].rows, 8, imgs[i].step[0], colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
     }
@@ -58,53 +60,26 @@ void ofApp::update(){
         dID = onlineDisplays[i];
         imageRef[i] = CGDisplayCreateImage(dID);
         CGContextDrawImage(contextRef[i], CGRectMake(0, 0, width[i], height[i]), imageRef[i]);
+        if(isFirst){
+            isFirst = false;
+        }
+        else{
+            diff[i]= 0.0;//差分を初期化
+            imgsdiff[i] = graydiff(imgs[i], imgsold[i]);
+            cout <<ofToString(i)+":"<< reduceMat(imgsdiff[i]) << endl;
+        }
+        imgs[i].copyTo(imgsold[i]);
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    //最初の実行時のみ，imgsoldにimgsをコピー
-    if (isFirst) {
-        for (int i = 0; i < displayCount; i++) {
-            imgsold[i] = imgs[i].clone();
-        }
-        isFirst = false;
-    }
-    else{
-        diff = 0.0;//差分を初期化
-        for (int i = 0; i < displayCount; i++) {
-            //cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
-            //diff+=Mat_average(imgsdiff[i]);
-            //Matdiff(imgs[i], imgsold[i]);
-            imgsdiff[i] = graydiff(imgs[i], imgsold[i]);
-            cout <<ofToString(i)+":"<< reduceMat(imgsdiff[i]) << endl;
-            imgsold[i] = imgs[i].clone();
-        }
-    }
-    //cout<< diff << endl;
-    //リサイズ後のスクショを描画
+    //ディスプレイの数だけ繰り返す
     for (int i = 0; i < displayCount; i++) {
-        //ofxCv::drawMat(imgs[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
-        ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
+        //最初の実行でない時のみ，輝度差分を抽出
+            ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
+            CGImageRelease(imageRef[i]);
     }
-/*
-    //画面収録用
-    ofImage savefig;
-    savefig.grabScreen(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
-    //指定したサンプリング時間を迎えた場合，画像を保存
-    if (int(ofGetElapsedTimef()-oldtime) == INTERVAL) {
-        //さらに半分にリサイズ
-        savefig.resize(savefig.getWidth()*RESIZE, savefig.getHeight()*RESIZE);
-        //タイムスタンプをファイル名として保存
-        savefig.save(ofGetTimestampString("%y%m%d%H%M%S") + ".jpg");
-        
-        //現在時刻に更新
-        oldtime = ofGetElapsedTimef();
-    }
-*/
-    //イメージを解放
-    for (int i = 0; i < displayCount; i++)
-        CGImageRelease(imageRef[i]);
 }
 
 //--------------------------------------------------------------
