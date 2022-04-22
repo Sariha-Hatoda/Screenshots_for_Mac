@@ -38,7 +38,9 @@ class ofApp : public ofBaseApp{
     //メインディスプレイの幅と高さ
     size_t width[MAX_DISPLAYS];
     size_t height[MAX_DISPLAYS];
-
+    size_t total_disp_size[MAX_DISPLAYS];
+    size_t all_disp_size;
+    
     //描画する際の画面サイズ
     size_t drawwidth, drawheight;
 
@@ -62,7 +64,7 @@ class ofApp : public ofBaseApp{
     bool isFirst;
 
     //輝度差分を格納しておく変数
-    float diff[MAX_DISPLAYS];
+    float diff;
 
     //グレースケール化したのち差分画像を生成する関数
     cv::Mat graydiff(cv::Mat now, cv::Mat old){

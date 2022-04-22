@@ -1,14 +1,5 @@
 #include "ofApp.h"
 
-/*
-目的:マルチディスプレイであっても輝度差分を抽出し，指定時間でサンプリングする
-
-目標:
-輝度差分をとる．
-とれた．
-
-*/
-
 //--------------------------------------------------------------
 void ofApp::setup(){
     //色空間の定義(デバイス依存)
@@ -20,7 +11,7 @@ void ofApp::setup(){
     //ofAppウィンドウサイズを初期化
     drawwidth =0;
     drawheight=0;
-
+    all_disp_size = 0;
     //ディスプレイIDおよび幅と高さの初期化
     for (int i = 0; i < displayCount; i++) {
 
@@ -29,6 +20,8 @@ void ofApp::setup(){
 
         width[i] =CGDisplayPixelsWide(dID);
         height[i] =CGDisplayPixelsHigh(dID);
+        total_disp_size[i] = width[i]*height[i];
+        all_disp_size+=total_disp_size[i];
         //ofAppウィンドウの横幅は単純に合計
         drawwidth+=width[i];
         //高さはどちらか高い方
@@ -56,29 +49,37 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     //検出されたディスプレイの数だけ，スクショを取得
+    diff= 0.0;
     for (int i = 0; i < displayCount; i++) {
         dID = onlineDisplays[i];
         imageRef[i] = CGDisplayCreateImage(dID);
         CGContextDrawImage(contextRef[i], CGRectMake(0, 0, width[i], height[i]), imageRef[i]);
+
+        //最初の実行の場合，何もしないでフラグを下ろす
         if(isFirst){
             isFirst = false;
         }
+        //2回目以降の実行の場合，実際に差分の計算
         else{
-            diff[i]= 0.0;//差分を初期化
+            //差分画像の生成
             imgsdiff[i] = graydiff(imgs[i], imgsold[i]);
-            cout <<ofToString(i)+":"<< reduceMat(imgsdiff[i]) << endl;
+            //差分値(平均値)の計算
+            diff+=reduceMat(imgsdiff[i])*total_disp_size[i];
         }
-        imgs[i].copyTo(imgsold[i]);
+        //どちらの場合でも，古い画像は更新する
+        imgsold[i] = imgs[i].clone();
     }
+    cout<<diff/(float)all_disp_size<<endl;
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
     //ディスプレイの数だけ繰り返す
     for (int i = 0; i < displayCount; i++) {
-        //最初の実行でない時のみ，輝度差分を抽出
-            ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
-            CGImageRelease(imageRef[i]);
+        //差分画像の描画
+        ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
+        //画像の解放
+        CGImageRelease(imageRef[i]);
     }
 }
 
