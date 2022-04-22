@@ -3,8 +3,6 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
-#include <ApplicationServices/ApplicationServices.h>
-#include <CoreGraphics/CoreGraphics.h>
 
 #define MAX_DISPLAYS 2
 #define INTERVAL 3
@@ -46,7 +44,7 @@ class ofApp : public ofBaseApp{
 
     //画像を格納するグローバル変数
     //ARGB
-    cv::Mat imgs[MAX_DISPLAYS];
+    cv::Mat imgs[MAX_DISPLAYS], imgsold[MAX_DISPLAYS],imgsdiff[MAX_DISPLAYS];
 
     //ディスプレイの色の解釈方式，つまり色空間
     CGColorSpaceRef colorSpace;
@@ -59,4 +57,30 @@ class ofApp : public ofBaseApp{
 
     //時刻取得用
     unsigned int oldtime;
+    
+    //最初の実行かどうかを管理するフラグ
+    bool isFirst;
+
+    //輝度差分を格納しておく変数
+    float diff;
+    //cv::Matを0次元まで圧縮する関数(プロトコルはAVERAGE)
+    void Matdiff(cv::Mat now, cv::Mat old){
+        //スカラ形式で0次元のMatの値を格納
+        int scalaint=0;
+        //グレースケール化
+        cv::Mat nowg,oldg,diffg;
+        cv::cvtColor(now, nowg, CV_RGBA2GRAY);
+        cv::cvtColor(old, oldg, CV_RGBA2GRAY);
+
+        cv::absdiff(nowg,oldg,diffg);
+
+        cv::Mat reduce1, reduce0;
+
+        cv::reduce(diffg, reduce1, 1, CV_REDUCE_AVG);
+        cv::reduce(reduce1, reduce0, 0, CV_REDUCE_AVG);
+        //cout << reduce0.at<int>(0) << endl;
+        scalaint = reduce0.at<int>(0);
+        cout << scalaint << endl;
+        //return scalaint;
+    }
 };

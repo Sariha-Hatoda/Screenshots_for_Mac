@@ -45,6 +45,8 @@ void ofApp::setup(){
     //ウィンドウの形状をリサイズ後のサイズで指定
     ofSetWindowShape(drawwidth*RESIZE, drawheight*RESIZE);
 
+    isFirst = true;
+
     //開始時刻の記録
     oldtime = ofGetElapsedTimef();
 }
@@ -61,11 +63,29 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    //最初の実行時のみ，imgsoldにimgsをコピー
+    if (isFirst) {
+        for (int i = 0; i < displayCount; i++) {
+            imgsold[i] = imgs[i].clone();
+        }
+        isFirst = false;
+    }
+    else{
+        diff = 0.0;//差分を初期化
+        for (int i = 0; i < displayCount; i++) {
+            //cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
+            //diff+=Mat_average(imgsdiff[i]);
+            Matdiff(imgs[i], imgsold[i]);
+            imgsold[i] = imgs[i].clone();
+        }
+    }
+    //cout<< diff << endl;
     //リサイズ後のスクショを描画
     for (int i = 0; i < displayCount; i++) {
         ofxCv::drawMat(imgs[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
+        //ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]*RESIZE, 0, width[i]*RESIZE, height[i]*RESIZE);
     }
-
+/*
     //画面収録用
     ofImage savefig;
     savefig.grabScreen(0, 0, ofGetWindowWidth(), ofGetWindowHeight());
@@ -79,6 +99,7 @@ void ofApp::draw(){
         //現在時刻に更新
         oldtime = ofGetElapsedTimef();
     }
+*/
     //イメージを解放
     for (int i = 0; i < displayCount; i++)
         CGImageRelease(imageRef[i]);
