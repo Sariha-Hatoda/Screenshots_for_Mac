@@ -9,7 +9,8 @@
 
 void ScreenGrab::init(){
     //色空間を定義
-    colorSpace = CGColorSpaceCreateDeviceRGB();
+    //colorSpace = CGColorSpaceCreateDeviceRGB();
+    colorSpace = CGColorSpaceCreateDeviceGray();
 
     //オンラインディスプレイのリストを取得
     dErr = CGGetOnlineDisplayList(maxDisplays, onlineDisplays, &displayCount);
@@ -26,7 +27,6 @@ void ScreenGrab::init(){
 
         width[i]  = CGDisplayPixelsWide(dID)/10;
         height[i] = CGDisplayPixelsHigh(dID)/10;
-        cout<<width[i]<<"x"<<height[i]<<endl;
         total_disp_size[i] = width[i]*height[i];
         all_disp_size+=total_disp_size[i];
         //ofAppウィンドウの横幅は単純に合計
@@ -36,13 +36,13 @@ void ScreenGrab::init(){
             drawheight = height[i];
 
         //画像配列の定義
-        cv::Mat im(cv::Size(width[i], height[i]), CV_8UC4);
+        cv::Mat im(cv::Size(width[i], height[i]), CV_8UC1);
         //配列要素を同様に定義
         imgs[i] = im;
         //imgsoldはimgsで初期化
         imgsold[i] = imgs[i].clone();
         //CGコンテクストを作成
-        contextRef[i] = CGBitmapContextCreate(imgs[i].data, imgs[i].cols, imgs[i].rows, 8, imgs[i].step[0], colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
+        contextRef[i] = CGBitmapContextCreate(imgs[i].data, imgs[i].cols, imgs[i].rows, 8, imgs[i].step[0], colorSpace,kCGBitmapByteOrderDefault);
     }
     //検出されたディスプレイの数だけ，スクショを取得
     diff= 0.0;
@@ -54,9 +54,9 @@ void ScreenGrab::init(){
 void ScreenGrab::update(){
     for (int i = 0; i < displayCount; i++) {
         dID = onlineDisplays[i];
+        //この2行が異常なまでにcpuを食い潰す．
         imageRef[i] = CGDisplayCreateImage(dID);
         CGContextDrawImage(contextRef[i], CGRectMake(0, 0, width[i], height[i]), imageRef[i]);
-
         //最初の実行の場合，何もしないでフラグを下ろす
         if(isFirst){
             isFirst = false;
@@ -65,7 +65,8 @@ void ScreenGrab::update(){
         else{
             //ofApp.cpp
             //差分画像の生成
-            imgsdiff[i] = graydiff(imgs[i], imgsold[i]);
+            //imgsdiff[i] = graydiff(
+            cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
             //差分値(平均値)の計算
             //平均値を求めた後，ディスプレイの解像度をかけ直して平均し直す
             diff+=reduceMat(imgsdiff[i])*total_disp_size[i];
