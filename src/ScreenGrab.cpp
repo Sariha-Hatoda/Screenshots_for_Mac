@@ -10,7 +10,7 @@
 void ScreenGrab::init(){
     //色空間を定義
     //colorSpace = CGColorSpaceCreateDeviceRGB();
-    colorSpace = CGColorSpaceCreateDeviceGray();
+    colorSpace = CGColorSpaceCreateDeviceGray();//グレースケール
 
     //オンラインディスプレイのリストを取得
     dErr = CGGetOnlineDisplayList(maxDisplays, onlineDisplays, &displayCount);
@@ -36,7 +36,7 @@ void ScreenGrab::init(){
             drawheight = height[i];
 
         //画像配列の定義
-        cv::Mat im(cv::Size(width[i], height[i]), CV_8UC1);
+        cv::Mat im(cv::Size(width[i], height[i]), CV_8UC1);//グレースケールなので，チャネル数は1，階調は　8ビット
         //配列要素を同様に定義
         imgs[i] = im;
         //imgsoldはimgsで初期化
@@ -49,30 +49,39 @@ void ScreenGrab::init(){
 
     //フラグをtrueで初期化
     isFirst = true;
+
+    //スクショ取得の有無を決定するカウンタを初期化
+    grabcount = 0;
 }
 
 void ScreenGrab::update(){
-    for (int i = 0; i < displayCount; i++) {
-        dID = onlineDisplays[i];
-        //この2行が異常なまでにcpuを食い潰す．
-        imageRef[i] = CGDisplayCreateImage(dID);
-        CGContextDrawImage(contextRef[i], CGRectMake(0, 0, width[i], height[i]), imageRef[i]);
-        //最初の実行の場合，何もしないでフラグを下ろす
-        if(isFirst){
-            isFirst = false;
+    grabcount++;
+    if(grabcount>=5){
+        for (int i = 0; i < displayCount; i++) {
+            dID = onlineDisplays[i];
+            //この2行が異常なまでにcpuを食い潰す．
+            imageRef[i] = CGDisplayCreateImage(dID);
+            CGContextDrawImage(contextRef[i], CGRectMake(0, 0, width[i], height[i]), imageRef[i]);
+            //画像の解放
+            CGImageRelease(imageRef[i]);
+            //最初の実行の場合，何もしないでフラグを下ろす
+            if(isFirst){
+                isFirst = false;
+            }
+            //2回目以降の実行の場合，実際に差分の計算
+            else{
+                //ofApp.cpp
+                //差分画像の生成
+                //imgsdiff[i] = graydiff(
+                cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
+                //差分値(平均値)の計算
+                //平均値を求めた後，ディスプレイの解像度をかけ直して平均し直す
+                diff+=reduceMat(imgsdiff[i])*total_disp_size[i];
+            }
+            //どちらの場合でも，古い画像は更新する
+            imgsold[i] = imgs[i].clone();
         }
-        //2回目以降の実行の場合，実際に差分の計算
-        else{
-            //ofApp.cpp
-            //差分画像の生成
-            //imgsdiff[i] = graydiff(
-            cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
-            //差分値(平均値)の計算
-            //平均値を求めた後，ディスプレイの解像度をかけ直して平均し直す
-            diff+=reduceMat(imgsdiff[i])*total_disp_size[i];
-        }
-        //どちらの場合でも，古い画像は更新する
-        imgsold[i] = imgs[i].clone();
+        grabcount = 0;
     }
 }
 
@@ -85,8 +94,6 @@ void ScreenGrab::show(int resize){
     for (int i = 0; i < displayCount; i++) {
         //差分画像の描画
         ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]/resize, 0, width[i]/resize, height[i]/resize);
-        //画像の解放
-        CGImageRelease(imageRef[i]);
     }
 }
                         

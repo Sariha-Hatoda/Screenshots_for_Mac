@@ -58,6 +58,8 @@ public:
     //輝度差分を格納しておく変数
     float diff;
 
+    unsigned int grabcount;
+
     //ofApp.h
     //グレースケール化したのち差分画像を生成する関数
     cv::Mat graydiff(cv::Mat now, cv::Mat old){
