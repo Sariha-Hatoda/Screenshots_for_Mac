@@ -3,6 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
+    ofSetFrameRate(5);
     sc.init();
     //ウィンドウの形状をリサイズ後のサイズで指定
     ofSetWindowShape(sc.drawwidth/RESIZE, sc.drawheight/RESIZE);

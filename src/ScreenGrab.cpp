@@ -24,8 +24,9 @@ void ScreenGrab::init(){
         //ディスプレイIDの取得
         dID = onlineDisplays[i];
 
-        width[i] =CGDisplayPixelsWide(dID);
-        height[i] =CGDisplayPixelsHigh(dID);
+        width[i]  = CGDisplayPixelsWide(dID)/10;
+        height[i] = CGDisplayPixelsHigh(dID)/10;
+        cout<<width[i]<<"x"<<height[i]<<endl;
         total_disp_size[i] = width[i]*height[i];
         all_disp_size+=total_disp_size[i];
         //ofAppウィンドウの横幅は単純に合計
