@@ -58,7 +58,7 @@ public:
     //輝度差分を格納しておく変数
     float diff;
 
-    unsigned int grabcount;
+    unsigned int grabcount, ave_count;
 
     //ofApp.h
     //グレースケール化したのち差分画像を生成する関数

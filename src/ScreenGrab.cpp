@@ -52,11 +52,20 @@ void ScreenGrab::init(){
 
     //スクショ取得の有無を決定するカウンタを初期化
     grabcount = 0;
+
+    //平均化用のカウンタを初期化
+    ave_count = 0;
 }
 
 void ScreenGrab::update(){
     grabcount++;
-    if(grabcount>=5){
+    if(grabcount>=1){
+        //カウントアップ
+        ave_count++;
+        //一度輝度差分を平均し直す
+        diff*=(float)ave_count-1;
+        //差分値のバッファ
+        float diffbuf = 0.0;
         for (int i = 0; i < displayCount; i++) {
             dID = onlineDisplays[i];
             //この2行が異常なまでにcpuを食い潰す．
@@ -70,23 +79,31 @@ void ScreenGrab::update(){
             }
             //2回目以降の実行の場合，実際に差分の計算
             else{
-                //ofApp.cpp
                 //差分画像の生成
                 //imgsdiff[i] = graydiff(
                 cv::absdiff(imgs[i], imgsold[i], imgsdiff[i]);
                 //差分値(平均値)の計算
                 //平均値を求めた後，ディスプレイの解像度をかけ直して平均し直す
-                diff+=reduceMat(imgsdiff[i])*total_disp_size[i];
+                //この時点ではバッファに格納する
+                diffbuf+=reduceMat(imgsdiff[i])*total_disp_size[i];
             }
             //どちらの場合でも，古い画像は更新する
             imgsold[i] = imgs[i].clone();
         }
+        //全体の解像度で割って，マルチディスプレイの結果を平均化する
+        diffbuf/=all_disp_size;
+        diff+=diffbuf;
+        //差分抽出実行回数で平均化
+        diff/=(float)ave_count;
+        cout<<diff<<endl;
+        //検出用カウンタをリセット
         grabcount = 0;
     }
 }
 
 void ScreenGrab::clear(){
     diff = 0.0;
+    ave_count = 0;
 }
 
 void ScreenGrab::show(int resize){
