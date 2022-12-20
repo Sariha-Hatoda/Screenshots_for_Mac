@@ -56,7 +56,7 @@ public:
     bool isFirst;
 
     //輝度差分を格納しておく変数
-    float diff;
+    float diff,difftemp;
 
     unsigned int grabcount, ave_count;
 

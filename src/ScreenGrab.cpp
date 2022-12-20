@@ -25,8 +25,8 @@ void ScreenGrab::init(){
         //ディスプレイIDの取得
         dID = onlineDisplays[i];
 
-        width[i]  = CGDisplayPixelsWide(dID)/10;
-        height[i] = CGDisplayPixelsHigh(dID)/10;
+        width[i]  = CGDisplayPixelsWide(dID);
+        height[i] = CGDisplayPixelsHigh(dID);
         total_disp_size[i] = width[i]*height[i];
         all_disp_size+=total_disp_size[i];
         //ofAppウィンドウの横幅は単純に合計
@@ -44,8 +44,9 @@ void ScreenGrab::init(){
         //CGコンテクストを作成
         contextRef[i] = CGBitmapContextCreate(imgs[i].data, imgs[i].cols, imgs[i].rows, 8, imgs[i].step[0], colorSpace,kCGBitmapByteOrderDefault);
     }
-    //検出されたディスプレイの数だけ，スクショを取得
-    diff= 0.0;
+
+    diff= 0.0;      //累積の輝度差分價の平均値
+    difftemp = 0.0; //輝度差分の瞬間價を格納する変数
 
     //フラグをtrueで初期化
     isFirst = true;
@@ -59,11 +60,11 @@ void ScreenGrab::init(){
 
 void ScreenGrab::update(){
     grabcount++;
-    if(grabcount>=1){
+    //if(grabcount>=1){
         //カウントアップ
-        ave_count++;
+        //ave_count++;
         //一度輝度差分を平均し直す
-        diff*=(float)ave_count-1;
+        //diff*=(float)ave_count-1;
         //差分値のバッファ
         float diffbuf = 0.0;
         for (int i = 0; i < displayCount; i++) {
@@ -85,17 +86,19 @@ void ScreenGrab::update(){
                 //差分値(平均値)の計算
                 //平均値を求めた後，ディスプレイの解像度をかけ直して平均し直す
                 //この時点ではバッファに格納する
-                diffbuf+=reduceMat(imgsdiff[i])*total_disp_size[i];
+                difftemp = reduceMat(imgsdiff[i])*total_disp_size[i];
+                diffbuf+=difftemp;
             }
             //どちらの場合でも，古い画像は更新する
             imgsold[i] = imgs[i].clone();
-        }
-        //全体の解像度で割って，マルチディスプレイの結果を平均化する
-        diffbuf/=all_disp_size;
-        diff+=diffbuf;
+        //}
+        //全体の解像度で割って，マルチディスプレイの結果を平均化する(opencvによる行列圧縮のプロトコル自体が全ての画素の平均値導出なので，この操作は不要である)
+        //diffbuf/=all_disp_size;
+        //diff+=diffbuf;
+        diff = diffbuf;
         //差分抽出実行回数で平均化
-        diff/=(float)ave_count;
-        cout<<diff<<endl;
+        //diff/=(float)ave_count;
+        //cout<<diff<<endl;
         //検出用カウンタをリセット
         grabcount = 0;
     }
@@ -110,7 +113,8 @@ void ScreenGrab::show(int resize){
     //ディスプレイの数だけ繰り返す
     for (int i = 0; i < displayCount; i++) {
         //差分画像の描画
-        ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]/resize, 0, width[i]/resize, height[i]/resize);
+        ofxCv::drawMat(imgs[i], 0+i*width[i-1]/resize, 0, width[i]/resize, height[i]/resize);
+        //差分画像の描画
+        ofxCv::drawMat(imgsdiff[i], 0+i*width[i-1]/resize, height[i]/resize, width[i]/resize, height[i]/resize);
     }
 }
-                        

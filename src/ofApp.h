@@ -4,9 +4,10 @@
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 #include "ScreenGrab.hpp"
+#include "ofxGraph.h"//ProjectGeneratorで，xmlsettingsとguiを追加しておくのを忘れずに
 
 #define INTERVAL 3
-#define RESIZE 2
+#define RESIZE 4
 
 class ofApp : public ofBaseApp{
 
@@ -32,7 +33,8 @@ class ofApp : public ofBaseApp{
     ScreenGrab sc;
     //時刻取得用
     int old;
-
+    //グラフ描画用
+    ofxGraph graph;
     //指定時間が経過したかどうかを判断する論理関数
     bool isPassed(int* time){
         if((int)ofGetElapsedTimef()-(*time)==INTERVAL){
